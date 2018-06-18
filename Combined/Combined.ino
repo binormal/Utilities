@@ -42,18 +42,18 @@ void loop() {
 
         source = !source;
 
-        switch(source) {
-          case analog: {
-            clean_midi();
-          } break;
-
-          case midi: {
-            init_midi();
-          } break;
-
-          default:
-            Serial.println("Unknown source");
-        }
+        // switch(source) {
+        //   case analog: {
+        //     clean_midi();
+        //   } break;
+        //
+        //   case midi: {
+        //     init_midi();
+        //   } break;
+        //
+        //   default:
+        //     Serial.println("Unknown source");
+        // }
     }
 
     switch(source) {
