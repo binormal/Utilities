@@ -1,4 +1,3 @@
-// #include "pinout.h"
 #include <USBHost_t36.h>
 #include <Audio.h>
 
@@ -26,12 +25,10 @@ void setup() {
   analogWriteResolution(pwm_resolution);
   fft.windowFunction(AudioWindowHanning1024);
   for (int i = 0; i < num_lights; i++) {
-//    analogWriteFrequency(lights[i], pwm_freq);
     pinMode(lights[i], OUTPUT);
   }
 
   usb_host.begin();
-
 }
 
 void loop() {
@@ -41,19 +38,6 @@ void loop() {
         }
 
         source = !source;
-
-        // switch(source) {
-        //   case analog: {
-        //     clean_midi();
-        //   } break;
-        //
-        //   case midi: {
-        //     init_midi();
-        //   } break;
-        //
-        //   default:
-        //     Serial.println("Unknown source");
-        // }
     }
 
     switch(source) {
@@ -75,12 +59,7 @@ void loop() {
             Serial.print(AudioMemoryUsageMax());
             Serial.print('\t');
             for (int i = 0; i < num_lights; i++) {
-              analogWrite(lights[i], level[i]*pwm_max);
-        //    if (level[i] > 0) {
-        //      digitalWrite(lights[i], HIGH);
-        //    } else {
-        //      digitalWrite(lights[i], LOW);
-        //    }
+              level[i] *= pwm_max*10;
 
               Serial.print(level[i]);
               Serial.print('\t');
@@ -97,20 +76,7 @@ void loop() {
         Serial.println("Unknown source");
     }
 
-
-}
-
-
-void init_midi() {
-  midi_dev.setHandleNoteOn(OnNoteOn);
-  midi_dev.setHandleNoteOff(OnNoteOff);
-  Serial.println("Initialized MIDI handlers");
-}
-
-void clean_midi() {
-  midi_dev.setHandleNoteOn(EmptyFunction);
-  midi_dev.setHandleNoteOff(EmptyFunction);
-  Serial.println("Cleared MIDI handlers");
+    updateLights();
 }
 
 void OnNoteOn(byte channel, byte note, byte velocity)
@@ -123,7 +89,7 @@ void OnNoteOn(byte channel, byte note, byte velocity)
 	Serial.print(velocity);
 	Serial.println();
     int light = map(note, 21, 108, 0, 11);
-    analogWrite(lights[light], velocity*2);
+    level[light] = velocity*2;
 }
 
 void OnNoteOff(byte channel, byte note, byte velocity)
@@ -136,7 +102,11 @@ void OnNoteOff(byte channel, byte note, byte velocity)
 	//Serial.print(velocity);
 	Serial.println();
     int light = map(note, 21, 108, 0, 11);
-    analogWrite(lights[light], 0);
+    level[light] = 0;
 }
 
-void EmptyFunction(byte, byte, byte) { }
+void updateLights() {
+    for (int i = 0; i < num_lights; i++) {
+        analogWrite(lights[i], level[i]);
+    }
+}
